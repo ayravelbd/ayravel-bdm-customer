@@ -9,6 +9,7 @@ interface Category {
   slug: string;
   bannerImg: string;
   name: string;
+  mainCategory: string;
 }
 
 const FeaturedCategories: React.FC = () => {
@@ -63,7 +64,7 @@ const FeaturedCategories: React.FC = () => {
           className="flex gap-6 overflow-x-auto scroll-smooth pb-4 no-scrollbar"
         >
           {featuredCategories.map((category: Category) => (
-            <Link href={`/category/subcategory/${category.slug}`} key={category._id}>
+            <Link href={`/category/${category.mainCategory}/${category.slug}`} key={category._id}>
               <div className="flex-shrink-0 w-[180px] text-center hover:scale-105 transition-transform">
                 {/* Circular Image */}
                 <div 

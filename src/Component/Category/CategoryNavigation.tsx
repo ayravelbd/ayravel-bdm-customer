@@ -73,7 +73,7 @@ export default function CategoryNavigation({ categories, mainCategory, categoryL
                 {categoryList.map((category) => (
                   <Link
                     key={category._id}
-                    href={`/category/subcategory/${category.slug}`}
+                    href={`/category/${mainCategory || category.mainCategory}/${category.slug}`}
                     className="px-3 py-1 text-sm hover:bg-blue-50 rounded-md transition-colors duration-200"
                     style={{color: '#6b7280'}}
                   >
@@ -95,7 +95,7 @@ export default function CategoryNavigation({ categories, mainCategory, categoryL
                   .map((category) => (
                     <Link
                       key={category._id}
-                      href={`/category/subcategory/${category.slug}`}
+                      href={`/category/${category.mainCategory}/${category.slug}`}
                       className={`px-3 py-1 text-sm transition-colors duration-200 rounded-md ${
                         category._id === currentCategory._id
                           ? "bg-blue-50"

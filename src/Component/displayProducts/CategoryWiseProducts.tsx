@@ -171,7 +171,7 @@ const CategoryWiseProducts: React.FC<CategoryWiseProductsProps> = ({ categoryNam
       <div className="flex justify-between items-center mb-4">
         <h1 className="font-medium text-[22px] leading-[27px] text-[rgb(51,51,51)]" style={{ fontFamily: 'Lato, sans-serif, SiyamRupali', fontWeight: 500 }}>{categoryName} 🔥 📚 🎨</h1>
         <button 
-          onClick={() => router.push(`/category/subcategory/${categorySlug}`)}
+          onClick={() => router.push(`/category/${mainCategory}/${categorySlug}`)}
           className="px-4 py-2 border border-[#0692cb] text-[#0692cb] hover:bg-[#0692cb] hover:text-white rounded-md font-medium transition-colors cursor-pointer"
         >
           View All
@@ -245,7 +245,7 @@ const CategoryWiseProducts: React.FC<CategoryWiseProductsProps> = ({ categoryNam
                       )}
                     </Button>
 
-                    <Link href={`/product/${product._id}`}>
+                    <Link href={`/product/${product.description.slug}`}>
                       <Button
                         variant="default"
                         size="sm"

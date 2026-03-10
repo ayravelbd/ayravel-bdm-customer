@@ -75,7 +75,7 @@ const ProductCard = ({ product }: { product: any }) => {
         </div>
       </div>
       <div className="p-4 text-center">
-        <Link href={`/product/${product._id}`}>
+        <Link href={`/product/${product.description.slug}`}>
           <h3 className="text-md text-[#333333] hover:text-[#009FDA] cursor-pointer">
             {product.description.name}
           </h3>

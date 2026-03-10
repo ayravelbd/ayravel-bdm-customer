@@ -30,10 +30,11 @@ interface ProductGridProps {
   categoryName?: string;
   filters?: FilterState;
   currentCategory?: TCategory;
+  categoryList?: TCategory[];
   onFiltersChange?: (filters: FilterState) => void;
 }
 
-export default function ProductGrid({ mainCategory, categoryId, filters, currentCategory, onFiltersChange }: ProductGridProps) {
+export default function ProductGrid({ mainCategory, categoryId, filters, currentCategory, categoryList, onFiltersChange }: ProductGridProps) {
   const [showAllSubcategories, setShowAllSubcategories] = useState(false);
   const dispatch = useAppDispatch();
   
@@ -188,18 +189,19 @@ export default function ProductGrid({ mainCategory, categoryId, filters, current
 
 
   // Get subcategories - either from current category's subCategories array or other categories in same main category
-  const getSubcategoriesToShow = (): (TCategory | { _id: string; name: string; slug: string; isSubcategory: boolean })[] => {
+  const getSubcategoriesToShow = (): (TCategory | { _id: string; name: string; slug: string; isSubcategory: boolean; mainCategory: string })[] => {
     if (currentCategory?.subCategories && Array.isArray(currentCategory.subCategories) && currentCategory.subCategories.length > 0) {
-      // If current category has subcategories, show them as cards
       return currentCategory.subCategories.map((subCat, index) => ({
         _id: `${currentCategory._id}-sub-${index}`,
         name: subCat,
         slug: `${currentCategory.slug}-${subCat.toLowerCase().replace(/\s+/g, '-')}`,
-        isSubcategory: true
+        isSubcategory: true,
+        mainCategory: currentCategory.mainCategory || mainCategory || ''
       }));
+    } else if (categoryList && categoryList.length > 0) {
+      return categoryList;
     } else {
-      // Otherwise show other categories in the same main category
-      const targetMainCategory = mainCategory || currentCategory?.mainCategory;
+      const targetMainCategory = currentCategory?.mainCategory || mainCategory;
       return allCategories.filter(cat => cat.mainCategory === targetMainCategory);
     }
   };
@@ -238,10 +240,10 @@ export default function ProductGrid({ mainCategory, categoryId, filters, current
                     </div>
                   </div>
                 </button>
-              ) : (
+              ) : 'mainCategory' in item ? (
                 <Link
                   key={item._id}
-                  href={`/category/subcategory/${item.slug}`}
+                  href={`/category/${item.mainCategory}/${item.slug}`}
                   className="group"
                 >
                   <div className="bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg px-3 py-6 transition-all duration-200">
@@ -250,7 +252,7 @@ export default function ProductGrid({ mainCategory, categoryId, filters, current
                     </div>
                   </div>
                 </Link>
-              )
+              ) : null
             ))}
             
             {/* Show More/Less Button */}
@@ -281,10 +283,10 @@ export default function ProductGrid({ mainCategory, categoryId, filters, current
       <nav className="text-sm text-gray-600">
         <Link href="/" className="hover:underline" style={{color: '#0397D3'}}>Home</Link>
         <span className="mx-2">&gt;</span>
-        {mainCategory && (
+        {(currentCategory?.mainCategory || mainCategory) && (
           <>
-            <Link href={`/category/${mainCategory}`} className="hover:underline capitalize" style={{color: '#0397D3'}}>
-              {mainCategory}
+            <Link href={`/category/${currentCategory?.mainCategory || mainCategory}`} className="hover:underline capitalize" style={{color: '#0397D3'}}>
+              {currentCategory?.mainCategory || mainCategory}
             </Link>
             {currentCategory && (
               <>
@@ -329,7 +331,7 @@ export default function ProductGrid({ mainCategory, categoryId, filters, current
               <div key={product._id} className="bg-white cursor-pointer rounded-lg shadow-sm border hover:shadow-md transition-all duration-300 group relative overflow-hidden">
                 {/* Hover Overlay with Buttons - Full Card */}
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-3 transition-opacity duration-300 z-20 rounded-lg">
-                  <Link href={`/product/${product._id}`}>
+                  <Link href={`/product/${product.description.slug}`}>
                     <button className="bg-white cursor-pointer text-gray-800 hover:bg-gray-100 px-6 py-2 rounded-md shadow-md text-sm font-medium transition-colors">
                       View Details
                     </button>
@@ -374,7 +376,7 @@ export default function ProductGrid({ mainCategory, categoryId, filters, current
                   )}
                   
                   {/* Product Image */}
-                  <Link href={`/product/${product._id}`} className="block">
+                  <Link href={`/product/${product.description.slug}`} className="block">
                     <div className="aspect-square p-4">
                       <Image
                         src={product.featuredImg || "https://via.placeholder.com/200x200"}
@@ -388,7 +390,7 @@ export default function ProductGrid({ mainCategory, categoryId, filters, current
                 </div>
                 
                 {/* Product Info */}
-                <Link href={`/product/${product._id}`} className="block">
+                <Link href={`/product/${product.description.slug}`} className="block">
                   <div className="p-3 space-y-2">
                     <h3 className="text-sm font-medium text-gray-800 line-clamp-2 group-hover:text-[#0397D3] transition-colors">
                       {product.description.name}

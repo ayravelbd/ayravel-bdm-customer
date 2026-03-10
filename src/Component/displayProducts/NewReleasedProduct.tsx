@@ -199,7 +199,7 @@ const NewReleasedProducts: React.FC = () => {
                     )}
                   </Button>
 
-                  <Link href={`/product/${product._id}`}>
+                  <Link href={`/product/${product.description.slug}`}>
                     <Button
                       variant="default"
                       size="sm"

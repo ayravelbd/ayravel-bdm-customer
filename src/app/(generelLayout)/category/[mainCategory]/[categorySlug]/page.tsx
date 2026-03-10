@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import { useGetAllCategoriesQuery } from "@/redux/featured/category/categoryApi";
 import { TCategory } from "@/types/category/category";
 import { Filter, ArrowUpDown } from "lucide-react";
@@ -20,12 +20,26 @@ interface FilterState {
   discountRange: [number, number];
 }
 
-export default function MainCategoryPage() {
+export default function CategoryPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const mainCategory = params.mainCategory as string;
+  const categorySlug = params.categorySlug as string;
+  
+  const { data: categoriesResponse } = useGetAllCategoriesQuery();
+  const categories = (Array.isArray(categoriesResponse) ? categoriesResponse : ((categoriesResponse as unknown) as Record<string, unknown>)?.data || []) as TCategory[];
+  
+  // Find the current category by slug AND mainCategory to avoid collisions
+  const currentCategory = categories.find(cat => 
+    cat.slug === categorySlug && cat.mainCategory === mainCategory
+  );
+
+  const sortParam = searchParams.get('sort');
+  const initialSortBy = sortParam === 'new-released' ? 'new-released' : 'best-seller';
+
   const [filters, setFilters] = useState<FilterState>({
     selectedSubCategories: [],
-    sortBy: 'best-seller',
+    sortBy: initialSortBy,
     inStock: false,
     selectedPublishers: [],
     selectedLanguages: [],
@@ -36,14 +50,12 @@ export default function MainCategoryPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
 
-  const { data: categoriesResponse } = useGetAllCategoriesQuery();
-  const categories = (Array.isArray(categoriesResponse) ? categoriesResponse : ((categoriesResponse as unknown) as Record<string, unknown>)?.data || []) as TCategory[];
-  
-  // Filter categories by main category
-  const categoryList = categories.filter(cat => cat.mainCategory === mainCategory);
-
-  // Don't block rendering if no categories found - we can still show products
- 
+  useEffect(() => {
+    const sortParam = searchParams.get('sort');
+    if (sortParam === 'new-released') {
+      setFilters(prev => ({ ...prev, sortBy: 'new-released' }));
+    }
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -52,10 +64,10 @@ export default function MainCategoryPage() {
           {/* Desktop Sidebar */}
           <div className="hidden lg:block w-80 flex-shrink-0">
             <CategorySidebar 
-              categoryList={categoryList.length > 0 ? categoryList : undefined}
-              mainCategory={mainCategory}
               categories={categories}
+              currentCategory={currentCategory}
               onFiltersChange={setFilters}
+              initialSortBy={initialSortBy}
             />
           </div>
           
@@ -97,10 +109,10 @@ export default function MainCategoryPage() {
                   {/* Filter Content */}
                   <div className="overflow-y-auto max-h-[60vh] p-4">
                     <CategorySidebar 
-                      categoryList={categoryList.length > 0 ? categoryList : undefined}
-                      mainCategory={mainCategory}
                       categories={categories}
+                      currentCategory={currentCategory}
                       onFiltersChange={setFilters}
+                      initialSortBy={initialSortBy}
                     />
                   </div>
                   
@@ -200,7 +212,14 @@ export default function MainCategoryPage() {
               </div>
             )}
             
-            <ProductGrid mainCategory={mainCategory} filters={filters} categoryList={categoryList} />
+            <ProductGrid 
+              categoryId={currentCategory?._id}
+              categoryName={currentCategory?.name}
+              mainCategory={mainCategory}
+              currentCategory={currentCategory}
+              filters={filters}
+              onFiltersChange={setFilters}
+            />
           </div>
         </div>
       </div>

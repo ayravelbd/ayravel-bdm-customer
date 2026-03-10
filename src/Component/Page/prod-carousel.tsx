@@ -23,7 +23,7 @@ interface ApiCategory {
 interface Product {
   _id: string;
   featuredImg: string;
-  description: { name_bn: string };
+  description: { name_bn: string; slug?: string };
   categoryAndTags: {
     categories: Category[];
   };
@@ -135,7 +135,7 @@ export default function ProdCarousel() {
               <div className="grid grid-cols-2 gap-2 px-4 pb-3 flex-1">
                 {books.slice(0, 4).map((b) => (
                   <Link
-                    href={`/product/${b._id}`}
+                    href={`/product/${b.description.slug}`}
                     key={b._id}
                     className="block"
                   >

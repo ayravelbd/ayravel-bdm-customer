@@ -9,6 +9,7 @@ import Image from "next/image"
 
 interface Product {
     id: number
+    slug: string
     title: string
     author?: string
     price: number
@@ -21,6 +22,7 @@ interface Product {
 const products: Product[] = [
     {
         id: 1,
+        slug: "udayan-gopalkrishna",
         title: "উদয়ন গোপালকৃষ্ণ",
         author: "রবীন্দ্র নাথ",
         price: 157,
@@ -31,6 +33,7 @@ const products: Product[] = [
     },
     {
         id: 2,
+        slug: "surya-khadak-surya-utpad",
         title: "সূর্য খাদক সূর্য উৎপাদ",
         author: "শরৎচন্দ্র চট্টোপাধ্যায়",
         price: 180,
@@ -41,6 +44,7 @@ const products: Product[] = [
     },
     {
         id: 3,
+        slug: "nil-pahar-nilima",
         title: "নীল পাহাড় নীলিমা",
         author: "বঙ্কিম চন্দ্র চট্টোপাধ্যায়",
         price: 346,
@@ -51,6 +55,7 @@ const products: Product[] = [
     },
     {
         id: 4,
+        slug: "protimaer-protishod",
         title: "প্রতিমার প্রতিশোধ",
         author: "হুমায়ূন আহমেদ",
         price: 391,
@@ -61,6 +66,7 @@ const products: Product[] = [
     },
     {
         id: 5,
+        slug: "faber-castell-textliner",
         title: "Faber Castell Textliner",
         author: "Faber Castell",
         price: 307,
@@ -71,6 +77,7 @@ const products: Product[] = [
     },
     {
         id: 6,
+        slug: "sha-khosh-ke",
         title: "শা খোশ কে",
         author: "রাহাত খান",
         price: 221,
@@ -81,6 +88,7 @@ const products: Product[] = [
     },
     {
         id: 7,
+        slug: "quran-majid",
         title: "কুরআন মজিদ কুরআন মজিদ",
         author: "মাওলানা আকরামুল্লাহ",
         price: 392,
@@ -178,7 +186,7 @@ export default function TopReviewedProducts() {
 
                             {/* Hover Buttons */}
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-opacity z-20">
-                                <Link href={`/product/${product.id}`}>
+                                <Link href={`/product/${product.slug || product.id}`}>
                                     <Button
                                         size="sm"
                                         className="bg-white text-gray-800 hover:bg-gray-100 w-28"

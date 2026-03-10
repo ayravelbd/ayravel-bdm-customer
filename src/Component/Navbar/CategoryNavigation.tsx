@@ -89,7 +89,7 @@ export default function CategoryNavigation({ isMobileMenuOpen, setIsMobileMenuOp
                   {groupedCategories[mainCat]?.slice(0, 5).map((category) => (
                     <Link
                       key={category._id}
-                      href={`/category/subcategory/${category.slug}`}
+                      href={`/category/${mainCat}/${category.slug}`}
                       className="block py-1 pl-4 text-sm text-gray-600 hover:text-blue-600"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
@@ -136,6 +136,7 @@ export default function CategoryNavigation({ isMobileMenuOpen, setIsMobileMenuOp
               mainCategories.map((mainCat) => {
               // Check if current page belongs to this main category
               const isActive = pathname === `/category/${mainCat}` || 
+                pathname?.startsWith(`/category/${mainCat}/`) || 
                 (pathname?.startsWith('/category/subcategory/') && (() => {
                   const rawSlug = pathname.split('/').pop();
                   const slug = decodeURIComponent(rawSlug || '');
@@ -191,8 +192,21 @@ export default function CategoryNavigation({ isMobileMenuOpen, setIsMobileMenuOp
                       targetMainCategory = currentMainCat;
                     }
                     
-                    // Check if it's a subcategory page
-                    if (pathname?.startsWith('/category/subcategory/')) {
+                    // Check if it's a new nested category page
+                    else if (pathname?.match(/^\/category\/[^/]+\/[^/]+$/)) {
+                      const pathParts = pathname.split('/');
+                      const mainCat = pathParts[2];
+                      const categorySlug = pathParts[3];
+                      if (mainCategories.includes(mainCat)) {
+                        targetMainCategory = mainCat;
+                        currentCategory = categories.find(cat => 
+                          cat.slug === categorySlug && cat.mainCategory === mainCat
+                        );
+                      }
+                    }
+                    
+                    // Check if it's a subcategory page (old route)
+                    else if (pathname?.startsWith('/category/subcategory/')) {
                       const rawSlug = pathname.split('/').pop();
                       const slug = decodeURIComponent(rawSlug || '');
                       currentCategory = categories.find(cat => cat.slug === slug);
@@ -215,7 +229,7 @@ export default function CategoryNavigation({ isMobileMenuOpen, setIsMobileMenuOp
                     return groupedCategories[targetMainCategory].slice(0, 9).map((category) => (
                       <Link
                         key={category._id}
-                        href={`/category/subcategory/${category.slug}`}
+                        href={`/category/${targetMainCategory}/${category.slug}`}
                         className="text-sm transition-colors duration-200"
                         style={{
                           color: currentCategory && category._id === currentCategory._id ? '#0397D3' : '#374151'

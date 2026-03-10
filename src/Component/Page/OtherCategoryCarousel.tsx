@@ -15,7 +15,7 @@ interface Category {
 interface Product {
   _id: string;
   featuredImg: string;
-  description: { name_bn: string };
+  description: { name_bn: string; slug?: string };
   categoryAndTags: {
     categories: Category[];
   };
@@ -114,7 +114,7 @@ export default function OtherCategoryCarousel() {
               <div className="grid grid-cols-2 gap-2 px-4 pb-3 flex-1">
                 {products.slice(0, 4).map((p) => (
                   <Link
-                    href={`/product/${p._id}`}
+                    href={`/product/${p.description.slug}`}
                     key={p._id}
                     className="block"
                   >

@@ -34,6 +34,7 @@ export interface Book {
 
 export interface RelatedBook {
   id: string;
+  slug?: string;
   title: string;
   author: string;
   cover: string;
@@ -55,6 +56,7 @@ export interface ApiBook {
     name_bn?: string;
     description: string;
     description_bn?: string;
+    slug?: string;
   };
   categoryAndTags: {
     categories: Category[];

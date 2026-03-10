@@ -181,7 +181,7 @@ export default function ProductCarousel() {
 
                   {/* Mobile icons */}
                   <div className="absolute top-2 right-2 sm:hidden z-20 flex flex-col gap-2">
-                    <Link href={`/product/${product._id}`}>
+                    <Link href={`/product/${product.description.slug}`}>
                       <Button
                         size="sm"
                         className="bg-white/90 text-gray-800 hover:bg-white shadow-md w-8 h-8 p-0 rounded-full"
@@ -209,7 +209,7 @@ export default function ProductCarousel() {
 
                   {/* Hover actions */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 hidden sm:flex flex-col items-center justify-center gap-3 transition-opacity duration-300 z-20">
-                    <Link href={`/product/${product._id}`}>
+                    <Link href={`/product/${product.description.slug}`}>
                       <Button
                         size="sm"
                         className="bg-white text-gray-800 hover:bg-gray-100 w-28 shadow-md"

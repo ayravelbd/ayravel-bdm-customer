@@ -21,10 +21,10 @@ import { useAppSelector } from "@/redux/hooks";
 import { selectCurrentUser } from "@/redux/featured/auth/authSlice";
 
 interface BookProductPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 export default function BookProductPage({ params }: BookProductPageProps) {
-  const { id } = use(params);
+  const { slug } = use(params);
   const router = useRouter();
   const [mainBook, setMainBook] = useState<Book | null>(null);
   const [relatedBooks, setRelatedBooks] = useState<RelatedBook[]>([]);
@@ -34,7 +34,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
   const [brandName, setBrandName] = useState<string>("");
   const { data: session } = useSession();
   const user = useAppSelector(selectCurrentUser);
-  const { data: approvedReviews } = useGetApprovedReviewsByProductQuery(id);
+  const { data: approvedReviews } = useGetApprovedReviewsByProductQuery(mainBook?.id || '');
 
   const [createReview] = useCreateReviewMutation();
 
@@ -56,7 +56,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
 
     const formData = new FormData();
     formData.append("user", userId);
-    formData.append("product", id);
+    formData.append("product", mainBook?.id || '');
     formData.append("rating", rating.toString());
     formData.append("description", description);
 
@@ -91,17 +91,25 @@ export default function BookProductPage({ params }: BookProductPageProps) {
  
 
   useEffect(() => {
-    if (!id) return;
+    if (!slug) return;
 
     async function fetchMainBook() {
       try {
     const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_API}/product/${id}`
+          `${process.env.NEXT_PUBLIC_BASE_API}/product`
         );
         const result: ApiResponse = await response.json();
 
-        if (result.success && !Array.isArray(result.data)) {
-          const productData: ApiBook = result.data;
+        if (result.success && Array.isArray(result.data)) {
+          // Find product by slug
+          const productData = result.data.find((product: ApiBook) => 
+            product.description.slug === slug
+          );
+          
+          if (!productData) {
+            setError("Product not found");
+            return;
+          }
           
           // Fetch brand if brand ID exists
           if (productData.productInfo?.brand) {
@@ -187,7 +195,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
           const filteredBooks: RelatedBook[] = await Promise.all(
             result.data
               .filter((book: ApiBook) => {
-                if (book._id === id) return false;
+                if (book._id === mainBook?.id) return false;
                 const categoriesMatch = book.categoryAndTags?.categories?.some(
                   (c) =>
                     categoryNames.some(
@@ -234,6 +242,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
 
                 return {
                   id: bookData._id,
+                  slug: bookData.description.slug,
                   title: bookData.description.name,
                   author,
                   cover: bookData.featuredImg,
@@ -265,7 +274,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
     }
 
     fetchMainBook();
-  }, [id, reviews]);
+  }, [slug, reviews]);
 
   if (loading) {
     return (
@@ -291,6 +300,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
             <BookCoverCard 
               book={mainBook} 
               onPreviewClick={() => setShowPreview(true)}
+              isBookCategory={isBookCategory}
             />
             <div className="flex flex-col">
               <ProductDetails
@@ -541,7 +551,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
                 Please{" "}
                 <span
                   className="text-teal-600 hover:underline cursor-pointer"
-                  onClick={() => router.push(`/auth/login?redirect=/product/${id}`)}
+                  onClick={() => router.push(`/auth/login?redirect=/product/${mainBook?.id}`)}
                 >
                   log in
                 </span>{" "}

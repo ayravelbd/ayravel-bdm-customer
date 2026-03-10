@@ -51,7 +51,7 @@ const LaptopSaleBanner = () => {
 
   if (isLoading || !len) {
     return (
-      <div className="relative w-full h-[150px] sm:h-[300px] md:h-[400px] lg:h-[300px] bg-gray-100 animate-pulse rounded-md mt-5"></div>
+      <div className="relative w-full aspect-[3/1] bg-gray-100 animate-pulse rounded-md mt-5"></div>
     );
   }
 
@@ -65,7 +65,7 @@ const LaptopSaleBanner = () => {
       aria-label="Laptop promotions"
     >
       {/* Slides */}
-      <div className="relative w-full h-[150px] sm:h-[300px] md:h-[400px] lg:h-[300px] mt-5">
+      <div className="relative w-full aspect-[3/1] mt-5">
         {slides.map((img: string, i: number) => (
           <div
             key={i}

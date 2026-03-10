@@ -157,7 +157,7 @@ export default function Navbar({ isMobileMenuOpen, setIsMobileMenuOpen }: Navbar
     { label: "আমার অ্যাকাউন্ট", href: "/dashboard/profile" },
     { label: "অর্ডার ট্র্যাক", href: "/dashboard/orders" },
     { label: "কাস্টমার সার্ভিস", href: "/contact-us" },
-    { label: "বই পড়ুন", href: "/read-books" },
+    // { label: "বই পড়ুন", href: "/read-books" },
   ];
 
   return (
@@ -210,7 +210,7 @@ export default function Navbar({ isMobileMenuOpen, setIsMobileMenuOpen }: Navbar
                   alt="Logo"
                   width={50}
                   height={50}
-                  className="w-16 h-16 md:w-20 md:h-20 object-contain"
+                  className="w-16 h-16 md:w-32 md:h-14 object-contain"
                 />
               </Link>
             </div>
@@ -272,7 +272,7 @@ export default function Navbar({ isMobileMenuOpen, setIsMobileMenuOpen }: Navbar
                         <div
                           className="search-result-item flex justify-between items-center px-4 py-2 hover:bg-gray-50 cursor-pointer"
                           key={product._id}
-                          onClick={() => router.push(`/product/${product._id}`)}
+                          onClick={() => router.push(`/product/${product.description.slug}`)}
                         >
                           <div className="flex items-center gap-2">
                             <Image

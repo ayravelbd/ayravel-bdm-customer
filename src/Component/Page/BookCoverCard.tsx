@@ -10,9 +10,10 @@ import { Eye } from "lucide-react";
 interface BookCoverCardProps {
   book: Book;
   onPreviewClick?: () => void;
+  isBookCategory?: boolean;
 }
 
-export default function BookCoverCard({ book, onPreviewClick }: BookCoverCardProps) {
+export default function BookCoverCard({ book, onPreviewClick, isBookCategory = true }: BookCoverCardProps) {
   const [selectedImage, setSelectedImage] = useState<string>(book.image);
 
   return (
@@ -41,18 +42,6 @@ export default function BookCoverCard({ book, onPreviewClick }: BookCoverCardPro
           </div>
         </CardContent>
       </Card>
-
-      {/* একটু পড়ে দেখুন Button */}
-      {((book.previewPdf && book.previewPdf.length > 0) || (book.previewImg && book.previewImg.length > 0)) && (
-        <Button
-          onClick={onPreviewClick}
-          variant="outline"
-          className="w-full gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
-        >
-          <Eye className="w-4 h-4" />
-          একটু পড়ে দেখুন
-        </Button>
-      )}
 
       {/* Thumbnail Previews */}
       {book.previewImg && book.previewImg.length > 0 && (

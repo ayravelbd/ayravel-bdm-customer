@@ -46,7 +46,7 @@ export default function RelatedBooks({ books, isBookCategory = true }: RelatedBo
       
       <div className="grid grid-cols-1 gap-3">
         {visibleBooks.map((book) => (
-          <Link href={`/product/${book.id}`} key={book.id}>
+          <Link href={`/product/${book.slug || book.id}`} key={book.id}>
             <div className="bg-white border border-gray-200 rounded-md p-3 hover:shadow-md transition-shadow duration-200 cursor-pointer h-[130px]">
               <div className="flex gap-3 h-full">
               {/* Book Cover */}

@@ -157,7 +157,7 @@ export default function CategorySidebar({ categoryList, mainCategory, categories
               displayCategories.length > 0 ? displayCategories.map((category) => (
                 <div key={category._id}>
                   <Link 
-                    href={`/category/subcategory/${category.slug}`}
+                    href={`/category/${category.mainCategory}/${category.slug}`}
                     className="group flex items-center text-sm text-gray-700 py-1.5 hover:bg-gray-50 rounded px-2 transition-colors"
                   >
                     <div className="w-2 h-2 border border-gray-400 rounded-full mr-3 flex-shrink-0 group-hover:border-blue-500 group-hover:bg-blue-500 transition-colors"></div>
