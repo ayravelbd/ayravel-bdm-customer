@@ -9,7 +9,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import Image from "next/image";
-import { Star, Check } from "lucide-react";
+import { Star, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -167,7 +167,7 @@ const CategoryWiseProducts: React.FC<CategoryWiseProductsProps> = ({ categoryNam
   }
 
   return (
-    <div className="max-w-[1280px] mx-auto shadow-sm p-4 m-4 rounded-lg bg-white">
+    <div className="max-w-[1280px] mx-auto shadow-sm p-4 m-4 rounded-lg bg-white relative">
       <div className="flex justify-between items-center mb-4">
         <h1 className="font-medium text-[22px] leading-[27px] text-[rgb(51,51,51)]" style={{ fontFamily: 'Lato, sans-serif, SiyamRupali', fontWeight: 500 }}>{categoryName} 🔥 📚 🎨</h1>
         <button 
@@ -178,20 +178,9 @@ const CategoryWiseProducts: React.FC<CategoryWiseProductsProps> = ({ categoryNam
         </button>
       </div>
       
-      <div className="relative">
-        {/* Left Arrow */}
-        <button
-          onClick={() => scrollBy(-500)}
-          className="absolute top-1/2 -translate-y-1/2 -left-3 z-10 h-20 w-8 rounded-md border bg-white shadow hover:shadow-md flex items-center justify-center"
-        >
-          <span className="text-xs font-medium">&#10094;</span>
-        </button>
-
-        {/* Scrollable Container */}
-        <div
-          ref={scrollRef}
-          className="flex gap-3 overflow-x-auto scroll-smooth pb-4 no-scrollbar"
-        >
+      <div className="flex gap-3 overflow-x-auto scroll-smooth pb-4 no-scrollbar"
+        ref={scrollRef}
+      >
           {products.map((product: any) => (
             <Card
               key={product._id}
@@ -199,7 +188,7 @@ const CategoryWiseProducts: React.FC<CategoryWiseProductsProps> = ({ categoryNam
             >
               <CardContent className="p-2 flex flex-col items-center justify-center">
                 {/* Image Section */}
-                <div className="relative w-full h-48 mb-2 overflow-hidden rounded-lg">
+                <div className="relative w-full aspect-[3/4] mb-2 overflow-hidden rounded-lg">
                   <Image
                     src={product.featuredImg}
                     alt={product.description.name}
@@ -212,49 +201,12 @@ const CategoryWiseProducts: React.FC<CategoryWiseProductsProps> = ({ categoryNam
                     const discountPercent = Math.round(((product.productInfo.price - product.productInfo.salePrice) / product.productInfo.price) * 100);
                     const badgeColor = discountPercent > 30 ? 'bg-red-500 text-white' : 'bg-yellow-400 text-black';
                     return (
-                      <div className={`absolute top-1 left-1 w-12 h-12 rounded-full ${badgeColor} text-xs font-bold flex flex-col items-center justify-center leading-tight`}>
+                      <div className={`absolute top-1 left-1 w-12 h-12 rounded-full ${badgeColor} text-xs font-bold flex flex-col items-center justify-center leading-tight z-10`}>
                         <span>{discountPercent}%</span>
                         <span>OFF</span>
                       </div>
                     );
                   })()}
-
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col justify-center space-y-4 items-center py-6 transition-all duration-500">
-                    <Button
-                      variant={addedItems.has(product._id) ? "default" : "secondary"}
-                      size="sm"
-                      className={`transition-all duration-500 cursor-pointer translate-y-[-10px] group-hover:translate-y-0 ${
-                        addedItems.has(product._id) 
-                          ? "bg-green-500 hover:bg-green-600 text-white scale-110" 
-                          : ""
-                      }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleAddToCartWithAnimation(product);
-                      }}
-                    >
-                      {addedItems.has(product._id) ? (
-                        <>
-                          <Check className="w-4 h-4 mr-1" />
-                          Added!
-                        </>
-                      ) : (
-                        "Add to Cart"
-                      )}
-                    </Button>
-
-                    <Link href={`/product/${product.description.slug}`}>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="transition-all cursor-pointer duration-500 translate-y-[10px] group-hover:translate-y-0"
-                      >
-                        View Details
-                      </Button>
-                    </Link>
-                  </div>
                 </div>
 
                 {/* Product Info */}
@@ -283,19 +235,60 @@ const CategoryWiseProducts: React.FC<CategoryWiseProductsProps> = ({ categoryNam
                     </span>
                   )}
                 </div>
+
+                {/* Full Card Hover Overlay */}
+                <div className="absolute inset-0 bg-white/55 opacity-0 group-hover:opacity-100 flex flex-col justify-center items-center gap-3 transition-all duration-300 rounded-lg">
+                  <Button
+                    variant={addedItems.has(product._id) ? "default" : "secondary"}
+                    size="sm"
+                    className={`transition-all duration-300 cursor-pointer z-10 shadow-md ${
+                      addedItems.has(product._id) 
+                        ? "bg-green-500 hover:bg-green-600 text-white scale-110" 
+                        : "bg-gray-800 hover:bg-gray-900 text-white"
+                    }`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddToCartWithAnimation(product);
+                    }}
+                  >
+                    {addedItems.has(product._id) ? (
+                      <>
+                        <Check className="w-4 h-4 mr-1" />
+                        Added!
+                      </>
+                    ) : (
+                      "Add to Cart"
+                    )}
+                  </Button>
+
+                  <Link href={`/product/${product.description.slug}`}>
+                    <Button
+                      size="sm"
+                      className="bg-[#0692cb] hover:bg-[#0692cb]/90 text-white transition-all cursor-pointer duration-300 z-10 shadow-md"
+                    >
+                      View Details
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           ))}
-        </div>
-
-        {/* Right Arrow */}
-        <button
-          onClick={() => scrollBy(500)}
-          className="absolute top-1/2 -translate-y-1/2 -right-3 z-10 h-20 w-9 rounded-md border bg-white shadow hover:shadow-md flex items-center justify-center"
-        >
-          <span className="text-xs font-medium">&#10095;</span>
-        </button>
       </div>
+
+      <button
+        onClick={() => scrollBy(-500)}
+        className="absolute top-1/2 -translate-y-1/2 left-0 z-10 h-16 w-8 rounded-md border-2  cursor-pointer bg-white shadow hover:shadow-md flex items-center justify-center"
+      >
+        <ChevronLeft className="h-8 w-8" strokeWidth={3} />
+      </button>
+
+      <button
+        onClick={() => scrollBy(500)}
+        className="absolute top-1/2 -translate-y-1/2 right-0 z-10 h-16 w-9 rounded-md border-2 cursor-pointer bg-white shadow hover:shadow-md flex items-center justify-center"
+      >
+        <ChevronRight className="h-8 w-8" strokeWidth={3} />
+      </button>
     </div>
   );
 };

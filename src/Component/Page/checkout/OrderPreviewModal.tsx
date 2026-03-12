@@ -33,7 +33,7 @@ export default function OrderPreviewModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+        <div className="flex items-center justify-between p-4 border-b text-white" style={{ background: 'linear-gradient(to right, #1D9BCF, #1D9BCF)' }}>
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Package className="w-5 h-5" />
             Order Preview
@@ -57,7 +57,8 @@ export default function OrderPreviewModal({
               </h3>
               <button
                 onClick={onEdit}
-                className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1 font-medium"
+                className="text-sm flex items-center gap-1 font-medium hover:opacity-80"
+                style={{ color: '#1D9BCF' }}
               >
                 <Edit2 className="w-3 h-3" />
                 Edit
@@ -117,6 +118,18 @@ export default function OrderPreviewModal({
                   />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm line-clamp-2">{item.name}</p>
+                    
+                    {/* Show selected specifications */}
+                    {item.selectedSpecs && Object.keys(item.selectedSpecs).length > 0 && (
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {Object.entries(item.selectedSpecs).map(([key, value]) => (
+                          <span key={key} className="text-xs px-2 py-0.5 rounded capitalize" style={{ backgroundColor: '#E6F4F9', color: '#1D9BCF' }}>
+                            {key}: {value}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
                     <div className="flex items-center justify-between mt-1">
                       <span className="text-xs text-gray-500">Qty: {item.quantity}</span>
                       <span className="font-semibold text-sm">৳{(item.price * item.quantity).toLocaleString()}</span>
@@ -139,7 +152,7 @@ export default function OrderPreviewModal({
             </div>
             <div className="flex justify-between pt-2 border-t border-gray-300 text-base font-bold">
               <span>Total</span>
-              <span className="text-blue-600">৳{total.toLocaleString()}</span>
+              <span style={{ color: '#1D9BCF' }}>৳{total.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -154,7 +167,8 @@ export default function OrderPreviewModal({
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition shadow-md"
+            className="flex-1 px-4 py-2.5 text-white rounded-lg font-semibold transition shadow-md hover:opacity-90"
+            style={{ backgroundColor: '#1D9BCF' }}
           >
             Confirm Order ৳{total.toLocaleString()}
           </button>

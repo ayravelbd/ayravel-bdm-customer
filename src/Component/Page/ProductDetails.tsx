@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Heart,
   Share2,
@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import OfferNotices from "./OfferNotices";
-import { Book } from "@/types/boook";
+import { Book, ApiBook } from "@/types/boook";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "@/lib/slices/cartSlice";
 import { addToWishlist } from "@/lib/slices/wishlistSlice";
@@ -20,8 +20,24 @@ import { RootState } from "@/redux/store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
+import { InteractiveSpecificationSelector } from "./InteractiveSpecificationSelector";
+import { EnhancedAddToCartSection } from "./EnhancedAddToCartSection";
+import { TProduct } from "@/types/product/product";
 
-interface ProductDetailsProps extends Book {
+interface ProductVariant {
+  _id: string;
+  sku: string;
+  price: number;
+  salePrice?: number;
+  quantity: number;
+  specifications: { [key: string]: string };
+  images?: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ProductDetailsProps extends Omit<Book, 'productData'> {
   title: string;
   showPreview?: boolean;
   onPreviewClose?: () => void;
@@ -32,6 +48,11 @@ interface ProductDetailsProps extends Book {
   genre?: string[];
   translator?: string;
   authors?: Array<{ _id?: string; name: string }>;
+  // New props for specification system
+  productData?: ApiBook | TProduct;
+  hasVariants?: boolean;
+  specifications?: { [key: string]: string[] };
+  variants?: ProductVariant[];
 }
 
 // Export specifications rendering function
@@ -124,6 +145,35 @@ export function renderSpecifications({
   );
 }
 
+// Helper function to generate specifications from variants
+const generateSpecificationsFromVariants = (variants: ProductVariant[]) => {
+  if (!variants || variants.length === 0) {
+    return {};
+  }
+  
+  const specs: { [key: string]: Set<string> } = {};
+  variants.forEach((variant) => {
+    if (variant.specifications && typeof variant.specifications === 'object') {
+      Object.entries(variant.specifications).forEach(([key, value]) => {
+        if (key && value && key.trim() && value.toString().trim()) {
+          if (!specs[key]) {
+            specs[key] = new Set();
+          }
+          specs[key].add(value.toString().trim());
+        }
+      });
+    }
+  });
+  
+  // Convert Sets to Arrays and sort them
+  const finalSpecs: { [key: string]: string[] } = {};
+  Object.keys(specs).forEach(key => {
+    finalSpecs[key] = Array.from(specs[key]).sort();
+  });
+  
+  return finalSpecs;
+};
+
 export default function ProductDetails({
   title,
   author,
@@ -156,6 +206,11 @@ export default function ProductDetails({
   genre,
   translator,
   authors,
+  // New props
+  productData,
+  hasVariants,
+  specifications,
+  variants,
 }: ProductDetailsProps) {
   const router = useRouter(); // ✅ initialize router
   const dispatch = useDispatch();
@@ -169,6 +224,99 @@ export default function ProductDetails({
   const wishlistItems = useSelector((state: RootState) => state.wishlist.items);
   const isInWishlist = wishlistItems.some((item) => item.id === id);
   const [activeTab, setActiveTab] = useState<'reviews' | 'specifications'>('reviews');
+  
+  // New state for specifications
+  const [selectedSpecs, setSelectedSpecs] = useState<{ [key: string]: string }>({});
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  
+  // Generate specifications from variants if not provided
+  const finalSpecifications = useMemo(() => {
+    // First priority: Use provided specifications (for both simple and variable products)
+    if (specifications && Object.keys(specifications).length > 0) {
+      return specifications;
+    }
+    
+    // Second priority: Check if productData has specifications (for simple products)
+    if (productData && 'specifications' in productData && productData.specifications && Object.keys(productData.specifications).length > 0) {
+      // Convert single values to arrays for consistency
+      const convertedSpecs: { [key: string]: string[] } = {};
+      Object.entries(productData.specifications).forEach(([key, value]) => {
+        if (key && value) {
+          convertedSpecs[key] = Array.isArray(value) ? value : [value];
+        }
+      });
+      return convertedSpecs;
+    }
+    
+    // Third priority: Generate from variants (for variable products)
+    if (variants && variants.length > 0) {
+      const generated = generateSpecificationsFromVariants(variants);
+      if (Object.keys(generated).length > 0) {
+        return generated;
+      }
+    }
+    
+    return {};
+  }, [specifications, hasVariants, variants, productData, id, title]);
+  
+  // Debug: Log specification data
+  useEffect(() => {
+    console.log('🎨 Specifications Debug:', {
+      productId: id,
+      productName: title,
+      hasVariants,
+      originalSpecs: specifications,
+      finalSpecs: finalSpecifications,
+      variantsCount: variants?.length || 0,
+      sampleVariant: variants?.[0],
+      productData: productData ? 'exists' : 'missing'
+    });
+    
+    // Log each variant's specifications
+    if (variants && variants.length > 0) {
+      console.log('🔍 Variant Details:');
+      variants.forEach((variant, index) => {
+        console.log(`  Variant ${index + 1}:`, {
+          id: variant._id,
+          sku: variant.sku,
+          specifications: variant.specifications,
+          specKeys: variant.specifications ? Object.keys(variant.specifications) : []
+        });
+      });
+    }
+  }, [id, title, specifications, finalSpecifications, hasVariants, variants, productData]);
+  
+  // Find matching variant when specifications change
+  useEffect(() => {
+    if (!hasVariants || !variants || Object.keys(selectedSpecs).length === 0) {
+      setSelectedVariant(null);
+      return;
+    }
+    
+    // Find variant that matches all selected specifications
+    const matchingVariant = variants.find(variant => {
+      return Object.entries(selectedSpecs).every(([key, value]) => 
+        variant.specifications[key] === value
+      );
+    });
+    
+    setSelectedVariant(matchingVariant || null);
+    console.log('🎯 Variant Match:', { selectedSpecs, matchingVariant });
+  }, [selectedSpecs, hasVariants, variants]);
+  
+  const getCurrentPrice = () => {
+    if (selectedVariant) {
+      return selectedVariant.salePrice || selectedVariant.price;
+    }
+    return originalPrice && originalPrice < price ? originalPrice : price;
+  };
+  
+  const getCurrentStock = () => {
+    if (selectedVariant) {
+      return selectedVariant.quantity;
+    }
+    return stockCount;
+  };
 
   const increment = () => {
     if (!stockCount || quantity < stockCount) setQuantity(quantity + 1);
@@ -180,26 +328,73 @@ export default function ProductDetails({
 
   const handleAddToCart = () => {
     if (!inStock) return;
-    dispatch(
-      addToCart({
-        id,
-        name: title,
-        brand: author,
-        image: image || "/placeholder.jpg",
-        price,
-        originalPrice,
-        stock: stockCount,
-        superDeal: discount !== undefined && discount > 0,
-        selected: true,
-        quantity,
-      })
-    );
+    
+    console.log('🛍 Adding to cart with specs:', {
+      selectedSpecs,
+      selectedVariant,
+      hasSpecs: Object.keys(selectedSpecs).length > 0,
+      finalSpecifications,
+      productId: id,
+      productName: title
+    });
+    
+    // Create unique cart item ID based on product + specifications
+    const specString = Object.entries(selectedSpecs)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}:${value}`)
+      .join('|');
+    
+    const uniqueId = specString ? `${id}-${specString}` : id;
+    
+    const cartItem = {
+      id: uniqueId,
+      productId: id, // ✅ Keep original product ID
+      name: title,
+      brand: author,
+      image: image || "/placeholder.jpg",
+      price: getCurrentPrice(), // ✅ Use current price (variant or base)
+      originalPrice,
+      stock: getCurrentStock(), // ✅ Use current stock (variant or base)
+      superDeal: discount !== undefined && discount > 0,
+      selected: true,
+      quantity,
+      // ✅ CRITICAL: Always include selected specifications and variant
+      variantId: selectedVariant?._id,
+      selectedSpecs: Object.keys(selectedSpecs).length > 0 ? { ...selectedSpecs } : undefined,
+      sku: selectedVariant?.sku || (productData && 'productInfo' in productData && 'sku' in productData.productInfo ? productData.productInfo.sku : undefined),
+    };
+    
+    console.log('📦 Cart Item to be added:', cartItem);
+    console.log('🔍 Selected Specs Check:', {
+      selectedSpecs,
+      hasSelectedSpecs: Object.keys(selectedSpecs).length > 0,
+      cartItemSpecs: cartItem.selectedSpecs,
+      specString
+    });
+    
+    dispatch(addToCart(cartItem));
+    
+    // Show success message
+    const specsText = Object.keys(selectedSpecs).length > 0 
+      ? ' (' + Object.entries(selectedSpecs).map(([k,v]) => `${k}: ${v}`).join(', ') + ')'
+      : '';
+    alert(`Added to cart: ${title}${specsText}`);
   };
 
   const handleBuyNow = () => {
     if (!inStock) return;
+    
+    console.log('💳 Buy Now with specs:', {
+      selectedSpecs,
+      selectedVariant,
+      hasSpecs: Object.keys(selectedSpecs).length > 0,
+      finalSpecifications,
+      productId: id,
+      productName: title
+    });
+    
     handleAddToCart();
-    setTimeout(() => router.push("/checkout"), 200); // small delay (200ms)
+    setTimeout(() => router.push("/checkout"), 200);
   };
 
   const handleAddToWishlist = () => {
@@ -312,7 +507,7 @@ export default function ProductDetails({
             <span className="text-blue-600 text-sm">
               {Array.isArray(category)
                 ? category
-                    .map((cat) => (typeof cat === "string" ? cat : cat.name))
+                    .map((cat) => (typeof cat === "string" ? cat : (cat as { name: string }).name))
                     .join(", ")
                 : category}
             </span>
@@ -426,51 +621,120 @@ export default function ProductDetails({
           ]}
         /> */}
 
-        {/* Action Buttons */}
-        <div className="space-y-3 pt-2">
-          <div className="flex gap-3">
-            <Button
-              onClick={handleAddToCart}
-              disabled={!inStock}
-              variant="outline"
-              className="flex-1 gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
-            >
-              <ShoppingCart className="w-4 h-4" />
-              Add To Cart
-            </Button>
-            <Button
-              onClick={handleBuyNow}
-              disabled={!inStock}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Buy Now
-            </Button>
+          {/* Interactive Specification Buttons - Compact Professional Design */}
+        {finalSpecifications && Object.keys(finalSpecifications).length > 0 && (
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-gray-800 mb-2">Select Options:</h4>
+            {Object.entries(finalSpecifications).map(([specName, values]) => {
+              // Ensure values is an array
+              const valueArray = Array.isArray(values) ? values : [values].filter(Boolean);
+              
+              if (valueArray.length === 0) return null;
+              
+              return (
+                <div key={specName} className="flex items-start gap-3">
+                  <label className="text-sm font-medium text-gray-600 min-w-[80px] pt-2 capitalize">
+                    {specName.replace(/([A-Z])/g, ' $1').trim()}:
+                  </label>
+                  <div className="flex flex-wrap gap-2 flex-1">
+                    {valueArray.map((value) => {
+                      if (!value) return null;
+                      
+                      const isSelected = selectedSpecs[specName] === value;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => {
+                            const newSpecs = { ...selectedSpecs, [specName]: value };
+                            setSelectedSpecs(newSpecs);
+                          }}
+                          className={`px-3 py-1.5 text-sm rounded border transition-all ${
+                            isSelected
+                              ? 'text-white font-semibold'
+                              : 'bg-white text-gray-700 border-gray-300 hover:text-[#1D9BCF]'
+                          }`}
+                          style={isSelected ? { backgroundColor: '#1D9BCF', borderColor: '#1D9BCF' } : { borderColor: isSelected ? '#1D9BCF' : undefined }}
+                        >
+                          {value}
+                          {isSelected && <span className="ml-1">✓</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+            
+            {/* Show selected count */}
+            {Object.keys(selectedSpecs).length > 0 && (
+              <div className="text-xs text-green-600 font-medium">
+                ✓ {Object.keys(selectedSpecs).length} option(s) selected: {Object.entries(selectedSpecs).map(([k,v]) => `${k}: ${v}`).join(', ')}
+              </div>
+            )}
           </div>
+        )}
 
-          {/* Wishlist & Share */}
-          <div className="flex items-center justify-between pt-2 border-t">
-            <button
-              onClick={handleAddToWishlist}
-              className={`flex items-center gap-2 text-sm transition-colors ${
-                isInWishlist
-                  ? "text-red-500"
-                  : "text-gray-600 hover:text-red-500"
-              }`}
-            >
-              <Heart
-                className={`w-4 h-4 ${isInWishlist ? "fill-red-500" : ""}`}
-              />
-              Add to Wishlist
-            </button>
-            <button 
-              onClick={handleShare}
-              className="flex items-center gap-2 text-gray-600 hover:text-blue-500 text-sm transition-colors"
-            >
-              <Share2 className="w-4 h-4" />
-              Share
-            </button>
+        {/* Enhanced Add to Cart Section */}
+        {productData ? (
+          <EnhancedAddToCartSection 
+            product={productData}
+            selectedSpecs={selectedSpecs}
+            selectedVariant={selectedVariant}
+            currentPrice={getCurrentPrice()}
+            currentStock={getCurrentStock()}
+            hasVariants={hasVariants || false}
+            specifications={finalSpecifications || {}}
+          />
+        ) : (
+          /* Fallback to original buttons */
+          <div className="space-y-3 pt-2">
+            <div className="flex gap-3">
+              <Button
+                onClick={handleAddToCart}
+                disabled={!inStock}
+                variant="outline"
+                className="flex-1 gap-2 text-white hover:opacity-90"
+                style={{ backgroundColor: 'transparent', borderColor: '#1D9BCF', color: '#1D9BCF' }}
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Add To Cart
+              </Button>
+              <Button
+                onClick={handleBuyNow}
+                disabled={!inStock}
+                className="flex-1 text-white hover:opacity-90"
+                style={{ backgroundColor: '#1D9BCF' }}
+              >
+                Buy Now
+              </Button>
+            </div>
+
+            {/* Wishlist & Share */}
+            <div className="flex items-center justify-between pt-2 border-t">
+              <button
+                onClick={handleAddToWishlist}
+                className={`flex items-center gap-2 text-sm transition-colors ${
+                  isInWishlist
+                    ? "text-red-500"
+                    : "text-gray-600 hover:text-red-500"
+                }`}
+              >
+                <Heart
+                  className={`w-4 h-4 ${isInWishlist ? "fill-red-500" : ""}`}
+                />
+                Add to Wishlist
+              </button>
+              <button 
+                onClick={handleShare}
+                className="flex items-center gap-2 text-gray-600 hover:text-blue-500 text-sm transition-colors"
+              >
+                <Share2 className="w-4 h-4" />
+                Share
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Preview Modal */}

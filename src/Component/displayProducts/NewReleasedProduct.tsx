@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import Image from "next/image";
 import { useGetAllProductsQuery } from "@/redux/featured/product/productApi";
-import { Star, Check } from "lucide-react";
+import { Star, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -108,7 +108,7 @@ const NewReleasedProducts: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-[1280px] mx-auto shadow-sm p-4 m-4 rounded-lg bg-white">
+      <div className="max-w-[1280px] mx-auto shadow-sm  px-4 rounded-lg bg-white">
         <div className="flex justify-between items-center mb-4">
           <div className="h-8 w-56 bg-gray-200 rounded animate-pulse"></div>
           <div className="h-10 w-20 bg-gray-200 rounded animate-pulse"></div>
@@ -138,7 +138,7 @@ const NewReleasedProducts: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <h1 className="font-medium text-[22px] leading-[27px] text-[rgb(51,51,51)]" style={{ fontFamily: 'Lato, sans-serif, SiyamRupali', fontWeight: 500 }}>New Released Products</h1>
         <button 
-          onClick={() => router.push('/category/subcategory/book?sort=new-released')}
+          onClick={() => router.push('/category/all?sort=new-released')}
           className="px-4 py-2 border border-[#0692cb] text-[#0692cb] hover:bg-[#0692cb] hover:text-white rounded-md font-medium transition-colors cursor-pointer"
         >
           View All
@@ -148,9 +148,9 @@ const NewReleasedProducts: React.FC = () => {
         {/* Left Arrow */}
         <button
           onClick={() => scrollBy(-500)}
-          className="absolute top-1/2 -translate-y-1/2 -left-3 z-10 h-20 w-8 rounded-md border bg-white shadow hover:shadow-md flex items-center justify-center"
+          className="absolute top-1/2 -translate-y-1/2 -left-3 z-10 h-16 w-8 rounded-md border bg-white shadow hover:shadow-md flex items-center justify-center"
         >
-          <span className="text-xs font-medium">&#10094;</span>
+          <ChevronLeft className="h-5 w-5" strokeWidth={3} />
         </button>
 
         {/* Scrollable Container */}
@@ -165,7 +165,7 @@ const NewReleasedProducts: React.FC = () => {
             >
             <CardContent className="p-2 flex flex-col items-center justify-center">
               {/* Image Section */}
-              <div className="relative w-full h-48 mb-2 overflow-hidden rounded-lg">
+              <div className="relative w-full aspect-[3/4] mb-2 overflow-hidden rounded-lg">
                 <Image
                   src={product.featuredImg}
                   alt={product.description.name}
@@ -173,42 +173,17 @@ const NewReleasedProducts: React.FC = () => {
                   className="object-cover rounded-lg transition-transform duration-500 group-hover:scale-110"
                 />
 
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col justify-center space-y-4 items-center py-6 transition-all duration-500">
-                  <Button
-                    variant={addedItems.has(product._id) ? "default" : "secondary"}
-                    size="sm"
-                    className={`transition-all duration-500 cursor-pointer translate-y-[-10px] group-hover:translate-y-0 ${
-                      addedItems.has(product._id) 
-                        ? "bg-green-500 hover:bg-green-600 text-white scale-110" 
-                        : ""
-                    }`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleAddToCartWithAnimation(product);
-                    }}
-                  >
-                    {addedItems.has(product._id) ? (
-                      <>
-                        <Check className="w-4 h-4 mr-1" />
-                        Added!
-                      </>
-                    ) : (
-                      "Add to Cart"
-                    )}
-                  </Button>
-
-                  <Link href={`/product/${product.description.slug}`}>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="transition-all duration-500 cursor-pointer translate-y-[10px] group-hover:translate-y-0"
-                    >
-                      View Details
-                    </Button>
-                  </Link>
-                </div>
+                {/* Discount Badge */}
+                {product.productInfo.salePrice && (() => {
+                  const discountPercent = Math.round(((product.productInfo.price - product.productInfo.salePrice) / product.productInfo.price) * 100);
+                  const badgeColor = discountPercent > 30 ? 'bg-red-500 text-white' : 'bg-yellow-400 text-black';
+                  return (
+                    <div className={`absolute top-1 left-1 w-12 h-12 rounded-full ${badgeColor} text-xs font-bold flex flex-col items-center justify-center leading-tight z-10`}>
+                      <span>{discountPercent}%</span>
+                      <span>OFF</span>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Product Info */}
@@ -220,18 +195,6 @@ const NewReleasedProducts: React.FC = () => {
                 <CardDescription className="text-xs text-gray-600 line-clamp-1">
                   {getProductAuthorOrBrand(product)}
                 </CardDescription>
-
-                {/* Discount Badge */}
-                {product.productInfo.salePrice && (() => {
-                  const discountPercent = Math.round(((product.productInfo.price - product.productInfo.salePrice) / product.productInfo.price) * 100);
-                  const badgeColor = discountPercent > 30 ? 'bg-red-500 text-white' : 'bg-yellow-400 text-black';
-                  return (
-                    <div className={`absolute top-1 left-1 w-12 h-12 rounded-full ${badgeColor} text-xs font-bold flex flex-col items-center justify-center leading-tight`}>
-                      <span>{discountPercent}%</span>
-                      <span>OFF</span>
-                    </div>
-                  );
-                })()}
 
                 {/* Price Section */}
                 {product.productInfo.salePrice ? (
@@ -249,6 +212,42 @@ const NewReleasedProducts: React.FC = () => {
                   </span>
                 )}
               </div>
+
+              {/* Full Card Hover Overlay */}
+              <div className="absolute inset-0 bg-white/75 opacity-0 group-hover:opacity-100 flex flex-col justify-center items-center gap-3 transition-all duration-300 rounded-lg">
+                <Button
+                  variant={addedItems.has(product._id) ? "default" : "secondary"}
+                  size="sm"
+                  className={`transition-all duration-300 cursor-pointer z-10 shadow-md ${
+                    addedItems.has(product._id) 
+                      ? "bg-green-500 hover:bg-green-600 text-white scale-110" 
+                      : "bg-gray-800 hover:bg-gray-900 text-white"
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAddToCartWithAnimation(product);
+                  }}
+                >
+                  {addedItems.has(product._id) ? (
+                    <>
+                      <Check className="w-4 h-4 mr-1" />
+                      Added!
+                    </>
+                  ) : (
+                    "Add to Cart"
+                  )}
+                </Button>
+
+                <Link href={`/product/${product.description.slug}`}>
+                  <Button
+                    size="sm"
+                    className="bg-[#0692cb] hover:bg-[#0692cb]/90 text-white transition-all duration-300 cursor-pointer z-10 shadow-md"
+                  >
+                    View Details
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
           ))}
@@ -257,9 +256,9 @@ const NewReleasedProducts: React.FC = () => {
         {/* Right Arrow */}
         <button
           onClick={() => scrollBy(500)}
-          className="absolute top-1/2 -translate-y-1/2 -right-3 z-10 h-20 w-9 rounded-md border bg-white shadow hover:shadow-md flex items-center justify-center"
+          className="absolute top-1/2 -translate-y-1/2 -right-3 z-10 h-16 w-9 rounded-md border bg-white shadow hover:shadow-md flex items-center justify-center"
         >
-          <span className="text-xs font-medium">&#10095;</span>
+          <ChevronRight className="h-5 w-5" strokeWidth={3} />
         </button>
       </div>
     </div>

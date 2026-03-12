@@ -90,6 +90,11 @@ export default function ProductGrid({ mainCategory, categoryId, filters, current
     
     // Filter by mainCategory (main category page like /category/book)
     if (mainCategory) {
+      // If mainCategory is "all", show all products
+      if (mainCategory === 'all') {
+        return true;
+      }
+      
       // Check if product belongs to this main category via populated categories
       const productCategories = product.categoryAndTags?.categories || [];
       const belongsToMainCategory = productCategories.some((cat: string | { mainCategory?: string }) => 

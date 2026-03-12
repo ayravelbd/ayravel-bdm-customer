@@ -47,7 +47,7 @@ export default function CategoryListPage() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 bg-gray-100">
+    <div className="w-full max-w-6xl mx-auto px-4 bg-gray-100">
       <div className="flex items-center gap-2 md:gap-3 relative">
         <div
           ref={scrollContainerRef}

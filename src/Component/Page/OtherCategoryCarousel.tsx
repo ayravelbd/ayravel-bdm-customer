@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useGetAllProductsQuery } from "@/redux/featured/product/productApi";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
 interface Category {
   _id: string;
@@ -52,16 +53,16 @@ export default function OtherCategoryCarousel() {
   };
 
   return (
-    <main className="w-full max-w-7xl mx-auto my-24">
-      <h2 className="mb-4 text-[18px] font-semibold text-gray-800">
-        ক্যাটাগরিভিত্তিক অন্যান্য পণ্য
+    <main className="w-full max-w-7xl mx-auto -my-4">
+      <h2 className="mb-4 ml-6 text-[22px] font-normal text-gray-700">
+        Category Based Product
       </h2>
       <div className="relative">
         <button
           onClick={() => scrollBy(-320)}
-          className="absolute top-1/2 -translate-y-1/2 left-1 z-10 h-20 w-8 rounded-md border bg-white shadow hover:shadow-md flex items-center justify-center"
+          className="absolute top-1/2 -translate-y-1/2 left-0 z-10 h-16 w-8 rounded-md border-2 cursor-pointer bg-white shadow hover:shadow-md flex items-center justify-center"
         >
-          <span className="text-xs font-medium">&#10094;</span>
+          <ChevronLeft className="h-8 w-8" strokeWidth={3} />
         </button>
 
         <div
@@ -103,7 +104,7 @@ export default function OtherCategoryCarousel() {
             Object.entries(categories).map(([catName, products]) => (
             <div
               key={catName}
-              className="flex-shrink-0 w-80 h-[420px] rounded-md border border-gray-100 bg-white shadow-sm flex flex-col snap-start"
+              className="flex-shrink-0 w-80 rounded-md border border-gray-100 bg-white shadow-sm flex flex-col snap-start"
             >
               <div className="px-4 pt-4 pb-2">
                 <h3 className="text-[15px] font-semibold text-gray-800">
@@ -111,12 +112,12 @@ export default function OtherCategoryCarousel() {
                 </h3>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 px-4 pb-3 flex-1">
-                {products.slice(0, 4).map((p) => (
+              <div className={`grid grid-cols-2 gap-2 px-4 pb-3 ${products.length < 4 ? 'flex-1' : ''}`}>
+                {products.slice(0, 4).map((p, index) => (
                   <Link
                     href={`/product/${p.description.slug}`}
-                    key={p._id}
-                    className="block"
+                    key={`${catName}-${p._id}-${index}`}
+                    className="block hover:bg-gray-200 rounded-md p-2 transition-colors"
                   >
                     <div className="flex flex-col items-center">
                       <div className="relative h-24 w-16 sm:h-28 sm:w-20 md:h-32 md:w-24 lg:h-36 lg:w-28 overflow-hidden bg-gray-100 rounded-md border border-blue-100">
@@ -136,7 +137,7 @@ export default function OtherCategoryCarousel() {
                 ))}
               </div>
 
-              <div className="px-4 pb-4 mt-auto">
+              <div className={`px-7 pb-4 flex justify-end ${products.length < 4 ? 'mt-auto' : ''}`}>
                 <Link
                   href={`/category/subcategory/${products[0].categoryAndTags.categories[0].slug}`}
                   className="group inline-flex items-center text-[12px] font-medium text-sky-600 hover:text-sky-700"
@@ -165,9 +166,9 @@ export default function OtherCategoryCarousel() {
 
         <button
           onClick={() => scrollBy(320)}
-          className="absolute top-1/2 -translate-y-1/2 right-1 z-10 h-20 w-9 rounded-md border bg-white shadow hover:shadow-md flex items-center justify-center"
+          className="absolute top-1/2 -translate-y-1/2 right-0 z-10 h-16 w-9 rounded-md border-2 cursor-pointer bg-white shadow hover:shadow-md flex items-center justify-center"
         >
-          <span className="text-xs font-medium">&#10095;</span>
+          <ChevronRight className="h-8 w-8" strokeWidth={3} />
         </button>
       </div>
     </main>

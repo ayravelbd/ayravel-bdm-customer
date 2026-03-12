@@ -234,6 +234,15 @@ export default function MyOrdersTable() {
                         <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                           {item.productInfo?.description?.description}
                         </p>
+                        {item.selectedSpecs && Object.keys(item.selectedSpecs).length > 0 && (
+                          <div className="flex gap-2 mt-2">
+                            {Object.entries(item.selectedSpecs).map(([key, value]) => (
+                              <span key={key} className="text-xs bg-gray-100 px-2 py-1 rounded capitalize">
+                                {key}: {String(value)}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         <div className="flex gap-4 text-sm text-gray-600 mt-2">
                           <span>Qty: {item.quantity}</span>
                           <span>
@@ -468,6 +477,7 @@ export default function MyOrdersTable() {
                     <thead>
                       <tr className="text-left border-b">
                         <th className="py-2">Product Name</th>
+                        <th className="py-2">Specifications</th>
                         <th className="py-2">Qty</th>
                         <th className="py-2">Subtotal</th>
                       </tr>
@@ -476,6 +486,19 @@ export default function MyOrdersTable() {
                       {selectedOrder.orderInfo.map((item: any, i: number) => (
                         <tr key={i} className="border-b">
                           <td className="py-2">{item.productInfo?.description?.name}</td>
+                          <td className="py-2">
+                            {item.selectedSpecs && Object.keys(item.selectedSpecs).length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {Object.entries(item.selectedSpecs).map(([key, value]) => (
+                                  <span key={key} className="text-xs bg-gray-100 px-2 py-0.5 rounded capitalize">
+                                    {key}: {String(value)}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
                           <td className="py-2">{item.quantity}</td>
                           <td className="py-2">৳{item.totalAmount.subTotal}</td>
                         </tr>

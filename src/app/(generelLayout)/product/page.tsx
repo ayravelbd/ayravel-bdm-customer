@@ -59,8 +59,8 @@ export default function ProductPage() {
         {categoriesWithProducts.map((categoryName) => (
           <CategoryWiseProducts key={categoryName} categoryName={categoryName} />
         ))}
-
-        <PopularAuthorsCarousel />
+        <div className="py-1"></div>
+        {/* <PopularAuthorsCarousel /> */}
       </div>
     </div>
   );

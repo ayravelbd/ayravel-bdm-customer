@@ -30,6 +30,22 @@ export interface Book {
   translator?: string;
   previewImg: string[];
   previewPdf?: string;
+  // NEW: Specification system fields
+  productData?: ApiBook; // Full product data from API
+  hasVariants?: boolean;
+  specifications?: { [key: string]: string[] };
+  variants?: Array<{
+    _id: string;
+    sku: string;
+    price: number;
+    salePrice?: number;
+    quantity: number;
+    specifications: { [key: string]: string };
+    images?: string[];
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }>;
 }
 
 export interface RelatedBook {
@@ -88,6 +104,21 @@ export interface ApiBook {
   };
   averageRating: number;
   reviewCount: number;
+  // NEW: Specification system fields
+  hasVariants?: boolean;
+  specifications?: { [key: string]: string[] };
+  variants?: Array<{
+    _id: string;
+    sku: string;
+    price: number;
+    salePrice?: number;
+    quantity: number;
+    specifications: { [key: string]: string };
+    images?: string[];
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }>;
 }
 export interface Category {
   _id: string;

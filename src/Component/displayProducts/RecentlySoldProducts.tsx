@@ -9,7 +9,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import Image from "next/image";
-import { Star, Check } from "lucide-react";
+import { Star, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useAppDispatch } from "@/redux/hooks";
@@ -125,36 +125,22 @@ const RecentlySoldProducts: React.FC = () => {
   if (!recentlySoldProducts.length) return <p>No recently sold products available.</p>;
 
   return (
-    <div className="max-w-[1280px] mx-auto shadow-sm p-6 m-6 rounded-lg bg-white">
+    <div className="max-w-[1280px] mx-auto shadow-sm p-6 m-6 rounded-lg bg-white relative">
       <div className="flex justify-between items-center mb-6">
         <h1 className="font-medium text-[22px] leading-[27px] text-[rgb(51,51,51)]" style={{ fontFamily: 'Lato, sans-serif, SiyamRupali', fontWeight: 500 }}>Recently Sold Products</h1>
-        {/* <button className="text-blue-600 hover:text-blue-800 font-medium">
-          See All
-        </button> */}
       </div>
       
-      <div className="relative">
-        {/* Left Arrow */}
-        <button
-          onClick={() => scrollBy(-500)}
-          className="absolute top-1/2 -translate-y-1/2 -left-5 z-10 h-20 w-8 rounded-md border bg-white shadow hover:shadow-md flex items-center justify-center"
-        >
-          <span className="text-xs font-medium">&#10094;</span>
-        </button>
-
-        {/* Scrollable Container */}
-        <div
-          ref={scrollRef}
-          className="flex gap-3 overflow-x-auto scroll-smooth pb-4 no-scrollbar"
-        >
+      <div className="flex gap-3 overflow-x-auto scroll-smooth pb-4 no-scrollbar"
+        ref={scrollRef}
+      >
           {productsWithRatings.map((product: any) => (
             <Card
               key={product._id}
               className="group relative overflow-hidden hover:shadow-xl transition-all duration-500 rounded-lg border-none text-center flex-shrink-0 w-[200px] snap-start"
             >
-              <CardContent className="p-4 flex flex-col items-center justify-center">
+              <CardContent className="p-2 flex flex-col items-center justify-center">
                 {/* Image Section */}
-                <div className="relative w-full h-64 mb-4 overflow-hidden rounded-lg">
+                <div className="relative w-full aspect-[3/4] mb-2 overflow-hidden rounded-lg">
                   <Image
                     src={product.featuredImg}
                     alt={product.description.name}
@@ -167,58 +153,21 @@ const RecentlySoldProducts: React.FC = () => {
                     const discountPercent = Math.round(((product.productInfo.price - product.productInfo.salePrice) / product.productInfo.price) * 100);
                     const badgeColor = discountPercent > 30 ? 'bg-red-500 text-white' : 'bg-yellow-400 text-black';
                     return (
-                      <div className={`absolute top-1 left-1 w-12 h-12 rounded-full ${badgeColor} text-xs font-bold flex flex-col items-center justify-center leading-tight`}>
+                      <div className={`absolute top-1 left-1 w-12 h-12 rounded-full ${badgeColor} text-xs font-bold flex flex-col items-center justify-center leading-tight z-10`}>
                         <span>{discountPercent}%</span>
                         <span>OFF</span>
                       </div>
                     );
                   })()}
-
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col justify-center space-y-4 items-center py-6 transition-all duration-500">
-                    <Button
-                      variant={addedItems.has(product._id) ? "default" : "secondary"}
-                      size="sm"
-                      className={`transition-all duration-500 cursor-pointer translate-y-[-10px] group-hover:translate-y-0 ${
-                        addedItems.has(product._id) 
-                          ? "bg-green-500 hover:bg-green-600 text-white scale-110" 
-                          : ""
-                      }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleAddToCartWithAnimation(product);
-                      }}
-                    >
-                      {addedItems.has(product._id) ? (
-                        <>
-                          <Check className="w-4 h-4 mr-1" />
-                          Added!
-                        </>
-                      ) : (
-                        "Add to Cart"
-                      )}
-                    </Button>
-
-                    <Link href={`/product/${product.description.slug}`}>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="transition-all duration-500 cursor-pointer translate-y-[10px] group-hover:translate-y-0"
-                      >
-                        View Details
-                      </Button>
-                    </Link>
-                  </div>
                 </div>
 
                 {/* Product Info */}
-                <div className="flex flex-col items-center justify-center space-y-2">
-                  <CardTitle className="font-bold">
+                <div className="flex flex-col items-center justify-center space-y-1">
+                  <CardTitle className="font-bold text-sm line-clamp-2">
                     {product.description.name}
                   </CardTitle>
 
-                  <CardDescription className="text-sm text-gray-600">
+                  <CardDescription className="text-xs text-gray-600 line-clamp-1">
                     {getProductAuthorOrBrand(product)}
                   </CardDescription>
 
@@ -227,8 +176,8 @@ const RecentlySoldProducts: React.FC = () => {
 
                   {/* Price Section */}
                   {product.productInfo.salePrice ? (
-                    <div className="flex items-center gap-2 justify-center">
-                      <span className="text-gray-500 line-through text-sm">
+                    <div className="flex items-center gap-1 justify-center">
+                      <span className="text-gray-500 line-through text-xs">
                         ৳ {product.productInfo.price}
                       </span>
                       <span className="text-sm font-bold text-green-600">
@@ -236,25 +185,66 @@ const RecentlySoldProducts: React.FC = () => {
                       </span>
                     </div>
                   ) : (
-                    <span className="text-lg font-bold">
+                    <span className="text-sm font-bold">
                       ৳ {product.productInfo.price}
                     </span>
                   )}
+                </div>
+
+                {/* Full Card Hover Overlay */}
+                <div className="absolute inset-0 bg-white/55 opacity-0 group-hover:opacity-100 flex flex-col justify-center items-center gap-3 transition-all duration-300 rounded-lg">
+                  <Button
+                    variant={addedItems.has(product._id) ? "default" : "secondary"}
+                    size="sm"
+                    className={`transition-all duration-300 cursor-pointer z-10 shadow-md ${
+                      addedItems.has(product._id) 
+                        ? "bg-green-500 hover:bg-green-600 text-white scale-110" 
+                        : "bg-gray-800 hover:bg-gray-900 text-white"
+                    }`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddToCartWithAnimation(product);
+                    }}
+                  >
+                    {addedItems.has(product._id) ? (
+                      <>
+                        <Check className="w-4 h-4 mr-1" />
+                        Added!
+                      </>
+                    ) : (
+                      "Add to Cart"
+                    )}
+                  </Button>
+
+                  <Link href={`/product/${product.description.slug}`}>
+                    <Button
+                      size="sm"
+                      className="bg-[#0692cb] hover:bg-[#0692cb]/90 text-white transition-all duration-300 cursor-pointer z-10 shadow-md"
+                    >
+                      View Details
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
           ))
         }
-        </div>
-
-        {/* Right Arrow */}
-        <button
-          onClick={() => scrollBy(500)}
-          className="absolute top-1/2 -translate-y-1/2 -right-5 z-10 h-20 w-9 rounded-md border bg-white shadow hover:shadow-md flex items-center justify-center"
-        >
-          <span className="text-xs font-medium">&#10095;</span>
-        </button>
       </div>
+
+      <button
+        onClick={() => scrollBy(-500)}
+        className="absolute top-1/2 -translate-y-1/2 left-0 z-10 h-16 w-8 rounded-md border-2 cursor-pointer bg-white shadow hover:shadow-md flex items-center justify-center"
+      >
+        <ChevronLeft className="h-8 w-8" strokeWidth={3} />
+      </button>
+
+      <button
+        onClick={() => scrollBy(500)}
+        className="absolute top-1/2 -translate-y-1/2 right-0 z-10 h-16 w-9 rounded-md border-2 cursor-pointer bg-white shadow hover:shadow-md flex items-center justify-center"
+      >
+        <ChevronRight className="h-8 w-8" strokeWidth={3} />
+      </button>
     </div>
   );
 };

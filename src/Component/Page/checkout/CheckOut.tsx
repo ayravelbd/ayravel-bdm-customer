@@ -57,6 +57,8 @@ const paymentInfoZodSchema = z.literal("cash-on");
 const orderInfoZodSchema = z.object({
   orderBy: objectIdSchema.optional(),
   productInfo: objectIdSchema,
+  variantId: z.string().optional(),
+  selectedSpecs: z.record(z.string(), z.string()).optional(),
   trackingNumber: z.number(),
   status: z
     .enum([
@@ -244,7 +246,10 @@ const CheckOut: React.FC = () => {
       const itemSubtotal = item.price * item.quantity;
       return {
         orderBy: checkoutType === "user" ? user?._id : undefined,
-        productInfo: item.id,
+        productInfo: item.productId || item.id,
+        // NEW: Add specification data
+        variantId: item.variantId,
+        selectedSpecs: item.selectedSpecs,
         trackingNumber: Math.floor(Math.random() * 900000000) + 100000000,
         status: "pending",
         isCancelled: false,
@@ -282,6 +287,13 @@ const CheckOut: React.FC = () => {
       totalAmount: subtotal + deliveryCharge,
     };
 
+    console.log("📦 Order Payload with Specifications:", payload);
+    console.log("🎯 Order Items with Specs:", orderInfo.map(item => ({
+      productInfo: item.productInfo,
+      variantId: item.variantId,
+      selectedSpecs: item.selectedSpecs,
+      quantity: item.quantity
+    })));
     console.log("Email being sent:", customerInfo.email);
     console.log("Full payload:", payload);
 

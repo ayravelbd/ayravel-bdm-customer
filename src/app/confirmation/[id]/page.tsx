@@ -25,6 +25,8 @@ interface OrderInfo {
   trackingNumber: number;
   orderBy: string;
   productInfo: ProductInfo;
+  variantId?: string;
+  selectedSpecs?: { [key: string]: string };
   status: string;
   isCancelled: boolean;
   quantity: number;
@@ -209,6 +211,18 @@ export default function OrderConfirmation() {
                       <Image src={item.productInfo.featuredImg} alt={item.productInfo.description.name} width={80} height={80} className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded" />
                       <div className="flex-1">
                         <h3 className="font-medium text-sm sm:text-base text-gray-900">{item.productInfo.description.name}</h3>
+                        
+                        {/* Show selected specifications */}
+                        {item.selectedSpecs && Object.keys(item.selectedSpecs).length > 0 && (
+                          <div className="mt-1 mb-2 flex flex-wrap gap-1">
+                            {Object.entries(item.selectedSpecs).map(([key, value]) => (
+                              <span key={key} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded capitalize">
+                                {key}: {value}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        
                         <p className="text-xs sm:text-sm text-gray-600">Quantity: {item.quantity}</p>
                         <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">৳ {item.totalAmount.total}</p>
                       </div>

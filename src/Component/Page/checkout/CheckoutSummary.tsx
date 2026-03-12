@@ -70,7 +70,8 @@ export default function CheckoutSummary({
       ) : (
         <button
           onClick={onConfirm}
-          className="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition-colors"
+          className="mt-6 w-full text-white font-bold py-3 px-4 rounded-lg text-lg transition-colors hover:opacity-90"
+          style={{ backgroundColor: '#1D9BCF' }}
         >
           অর্ডার নিশ্চিত করুন ৳{payableTotal?.toLocaleString() || 0}
         </button>

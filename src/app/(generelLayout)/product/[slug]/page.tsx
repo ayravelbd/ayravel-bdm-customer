@@ -34,7 +34,9 @@ export default function BookProductPage({ params }: BookProductPageProps) {
   const [brandName, setBrandName] = useState<string>("");
   const { data: session } = useSession();
   const user = useAppSelector(selectCurrentUser);
-  const { data: approvedReviews } = useGetApprovedReviewsByProductQuery(mainBook?.id || '');
+  const { data: approvedReviews } = useGetApprovedReviewsByProductQuery(mainBook?.id || '', {
+    skip: !mainBook?.id
+  });
 
   const [createReview] = useCreateReviewMutation();
 
@@ -114,12 +116,18 @@ export default function BookProductPage({ params }: BookProductPageProps) {
           // Fetch brand if brand ID exists
           if (productData.productInfo?.brand) {
             try {
-              const brandResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_BASE_API}/brand/${productData.productInfo.brand}`
-              );
-              const brandResult = await brandResponse.json();
-              if (brandResult.success && brandResult.data?.name) {
-                setBrandName(brandResult.data.name);
+              const brandId = typeof productData.productInfo.brand === 'string' 
+                ? productData.productInfo.brand 
+                : (productData.productInfo.brand as any)?._id || (productData.productInfo.brand as any)?.id;
+              
+              if (brandId) {
+                const brandResponse = await fetch(
+                  `${process.env.NEXT_PUBLIC_BASE_API}/brand/${brandId}`
+                );
+                const brandResult = await brandResponse.json();
+                if (brandResult.success && brandResult.data?.name) {
+                  setBrandName(brandResult.data.name);
+                }
               }
             } catch (err) {
               console.error("Failed to fetch brand:", err);
@@ -159,7 +167,13 @@ export default function BookProductPage({ params }: BookProductPageProps) {
             translator: productData.bookInfo?.translator,
             previewImg: productData.previewImg,
             previewPdf: productData.previewPdf,
+            // NEW: Add specification system data
+            productData: productData as unknown as ApiBook, // Pass full product data
+            hasVariants: productData.hasVariants,
+            specifications: productData.specifications,
+            variants: productData.variants,
           };
+          
           setMainBook(mappedBook);
 
           const categoryName = productData.categoryAndTags?.categories?.[0]?.name;
@@ -218,12 +232,18 @@ export default function BookProductPage({ params }: BookProductPageProps) {
                   author = bookData.bookInfo?.specification?.authors?.[0]?.name ||
                     bookData.categoryAndTags?.publisher ||
                     "Unknown Author";
-                } else if (bookData.productInfo?.brand && typeof bookData.productInfo.brand === 'string') {
+                } else if (bookData.productInfo?.brand) {
                   try {
-                    const brandRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/brand/${bookData.productInfo.brand}`);
-                    const brandData = await brandRes.json();
-                    if (brandData.success && brandData.data?.name) {
-                      author = brandData.data.name;
+                    const brandId = typeof bookData.productInfo.brand === 'string' 
+                      ? bookData.productInfo.brand 
+                      : (bookData.productInfo.brand as any)?._id || (bookData.productInfo.brand as any)?.id;
+                    
+                    if (brandId) {
+                      const brandRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/brand/${brandId}`);
+                      const brandData = await brandRes.json();
+                      if (brandData.success && brandData.data?.name) {
+                        author = brandData.data.name;
+                      }
                     }
                   } catch (err) {
                     console.error('Brand fetch error:', err);
@@ -315,6 +335,11 @@ export default function BookProductPage({ params }: BookProductPageProps) {
                 genre={mainBook.genre}
                 translator={mainBook.translator}
                 authors={mainBook.authors}
+                // NEW: Pass specification system props with proper debugging
+                productData={mainBook.productData}
+                hasVariants={mainBook.hasVariants || false}
+                specifications={mainBook.specifications || {}}
+                variants={mainBook.variants || []}
                 stars={
                   approvedReviews?.data?.length
                     ? approvedReviews.data.reduce((sum: number, r: any) => sum + r.rating, 0) / approvedReviews.data.length
@@ -551,7 +576,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
                 Please{" "}
                 <span
                   className="text-teal-600 hover:underline cursor-pointer"
-                  onClick={() => router.push(`/auth/login?redirect=/product/${mainBook?.id}`)}
+                  onClick={() => router.push(`/auth/login?redirect=/product/${slug}`)}
                 >
                   log in
                 </span>{" "}

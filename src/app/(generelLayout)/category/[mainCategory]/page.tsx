@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import { useGetAllCategoriesQuery } from "@/redux/featured/category/categoryApi";
 import { TCategory } from "@/types/category/category";
 import { Filter, ArrowUpDown } from "lucide-react";
@@ -22,10 +22,14 @@ interface FilterState {
 
 export default function MainCategoryPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const mainCategory = params.mainCategory as string;
+  const sortParam = searchParams.get('sort');
+  const initialSortBy = sortParam === 'new-released' ? 'new-released' : 'best-seller';
+  
   const [filters, setFilters] = useState<FilterState>({
     selectedSubCategories: [],
-    sortBy: 'best-seller',
+    sortBy: initialSortBy,
     inStock: false,
     selectedPublishers: [],
     selectedLanguages: [],
@@ -39,15 +43,30 @@ export default function MainCategoryPage() {
   const { data: categoriesResponse } = useGetAllCategoriesQuery();
   const categories = (Array.isArray(categoriesResponse) ? categoriesResponse : ((categoriesResponse as unknown) as Record<string, unknown>)?.data || []) as TCategory[];
   
-  // Filter categories by main category
-  const categoryList = categories.filter(cat => cat.mainCategory === mainCategory);
+  // Handle "all" category - show all categories
+  const categoryList = mainCategory === 'all' ? categories : categories.filter(cat => cat.mainCategory === mainCategory);
 
-  // Don't block rendering if no categories found - we can still show products
- 
+  // Update sort when URL changes
+  useEffect(() => {
+    const sortParam = searchParams.get('sort');
+    if (sortParam === 'new-released') {
+      setFilters(prev => ({ ...prev, sortBy: 'new-released' }));
+    }
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">
+            {mainCategory === 'all' ? (
+              sortParam === 'new-released' ? 'New Released Products' : 'All Products'
+            ) : (
+              `${mainCategory.charAt(0).toUpperCase() + mainCategory.slice(1)} Products`
+            )}
+          </h1>
+        </div>
+        
         <div className="flex gap-6">
           {/* Desktop Sidebar */}
           <div className="hidden lg:block w-80 flex-shrink-0">
@@ -56,6 +75,7 @@ export default function MainCategoryPage() {
               mainCategory={mainCategory}
               categories={categories}
               onFiltersChange={setFilters}
+              initialSortBy={initialSortBy}
             />
           </div>
           
@@ -101,6 +121,7 @@ export default function MainCategoryPage() {
                       mainCategory={mainCategory}
                       categories={categories}
                       onFiltersChange={setFilters}
+                      initialSortBy={initialSortBy}
                     />
                   </div>
                   

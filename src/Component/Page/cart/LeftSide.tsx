@@ -38,6 +38,15 @@ const EmiIcon: React.FC = () => (
 export default function LeftSide({ items }: LeftSideProps) {
   const dispatch = useDispatch();
 
+  // Debug: Log cart items to see if specifications are present
+  console.log('🛒 Cart Items Debug:', items.map(item => ({
+    id: item.id,
+    name: item.name,
+    selectedSpecs: item.selectedSpecs,
+    variantId: item.variantId,
+    hasSpecs: item.selectedSpecs && Object.keys(item.selectedSpecs).length > 0
+  })));
+
   return (
     <div className="lg:col-span-2 space-y-4">
       <div className="bg-white rounded-md shadow-sm">
@@ -78,6 +87,28 @@ export default function LeftSide({ items }: LeftSideProps) {
                 <p className="text-xs text-gray-600 mb-2">
                   {item.brand || "Unknown Brand"}
                 </p>
+
+                {/* Display Selected Specifications */}
+                {item.selectedSpecs && Object.keys(item.selectedSpecs).length > 0 ? (
+                  <div className="mb-2 flex flex-wrap gap-1">
+                    {Object.entries(item.selectedSpecs).map(([key, value]) => (
+                      <span
+                        key={key}
+                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                      >
+                        <span className="capitalize">{key}:</span>
+                        <span className="ml-1 font-semibold">{value}</span>
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  /* Debug: Show when no specifications */
+                  process.env.NODE_ENV === 'development' && (
+                    <div className="mb-2 text-xs text-gray-400 italic">
+                      No specifications selected
+                    </div>
+                  )
+                )}
 
                 <div className="flex items-center space-x-2 mb-2">
                   {item.originalPrice && (
